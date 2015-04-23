@@ -2,10 +2,97 @@
 package cs5530;
 
 import java.sql.*;
+import java.util.Calendar;
 
 public class Library {
 	public Library(){
 	}
+	
+	//Function for allowing users to check out books
+	public String checkOut(String isbn, String user_id, Connection con){
+		String query= "";
+		String resultstr = "";
+		try{
+	    	query = "SELECT * FROM BOOK_STOCK where isbn = ?";
+	    	PreparedStatement query_statment = con.prepareStatement(query);
+	    	query_statment.setString(1, isbn);
+	    	ResultSet rs1=query_statment.executeQuery();
+	    	if (!rs1.next()){
+	        	return ("You can only check out books that are currently stocked in the library.");	
+	        }
+	
+	    	query = "SELECT * FROM WAIT_LIST where isbn = ?";
+	    	PreparedStatement query_stat = con.prepareStatement(query);
+	    	query_stat.setString(1, isbn);
+	    	ResultSet rs2=query_stat.executeQuery();
+	    	//Will go into this block if a waitlist for the book exists
+	    	if (rs2.next()){
+	    		//inside this block we try to find if the user_id is the one waiting the longest
+		    	query = "SELECT user_id FROM WAIT_LIST where isbn = ? GROUP BY isbn HAVING min(wait_since)";
+		    	PreparedStatement insert_stat = con.prepareStatement(query);
+		    	insert_stat.setString(1, "" + isbn);
+		    	ResultSet rs3=query_stat.executeQuery();
+		    	rs3.next();
+		    	int user_id2 = rs3.getInt(1);
+		    	int user_id3 = Integer.parseInt(user_id);
+		    	if (user_id3 == user_id2)
+		    	{
+		    		resultstr = "User " + user_id2 +" is first in line on the waitlist";
+			    	query = "DELETE FROM WAIT_LIST "
+			    			+ "WHERE isbn = ? AND user_id = ?";
+			    	PreparedStatement state4= con.prepareStatement(query);
+			    	state4.setString(1, isbn);
+			    	state4.setInt(2, user_id2);
+			    	//System.out.println(state4);
+			    	state4.executeUpdate();
+
+		    	}
+		    	else
+		    	{
+		        	return ("There are people waiting for this item in front of you, so it is currently not available to checkout");
+		    	}
+	    	}
+	    	
+	    	//This section checks to make sure a book is available
+	    	query = "SELECT copy_number FROM BOOK_STOCK where isbn = ? and location <> 'checkedout' and location <> 'lost'";
+	    	PreparedStatement check_state= con.prepareStatement(query);
+	    	check_state.setString(1, isbn);
+	    	ResultSet check_result = check_state.executeQuery();
+	    	if (check_result.next()){
+		    	String copy_number = check_result.getString("copy_number");
+		    	query = "INSERT INTO CHECK_OUT (user_id, isbn, copy_number, due_date) "
+		    			+ "VALUES(?,?,?,?)";
+		    	PreparedStatement state3 = con.prepareStatement(query);
+		    	state3.setString(1, user_id);
+		    	state3.setString(2, isbn);
+		    	state3.setString(3, copy_number);
+		    	long time = System.currentTimeMillis();
+		    	java.sql.Date date = new java.sql.Date(time);
+		    	Calendar cal = Calendar.getInstance();
+		    	cal.setTime(date);
+		    	cal.add(Calendar.DAY_OF_YEAR,30);
+		    	java.sql.Date date1 = new java.sql.Date(cal.getTimeInMillis());
+		    	state3.setDate(4,date1);
+		    	state3.executeUpdate();
+
+		    	query = "UPDATE BOOK_STOCK SET location = 'checkedout' WHERE isbn = ? AND copy_number = ?";
+		    	PreparedStatement state4= con.prepareStatement(query);
+		    	state4.setString(1, isbn);
+		    	state4.setString(2, copy_number);
+		    	state4.executeUpdate();
+		    	
+		    	resultstr = resultstr + ("*Book ISBN: " + isbn +" Copy Number: " + copy_number + " has been checked out. Due Date: " + date1);
+	    	}
+	    	else{
+	        	return("There are currently no copies of this book available for checkout");
+	    	}
+		}
+		catch(Exception e){
+            return "Unable to execute query:"+query+" <BR>" + e.getMessage();
+		}
+    	return resultstr;
+	}
+	
 	
 	//Function for allowing users to be added to a waitlist
 	public String waitList(String isbn, String user_id, Connection con){

@@ -27,19 +27,16 @@ public class User {
     	//		+ "VALUES('"+user_id+"','"+username+"','"+name+"','"+address+"','"+email+"','"+phone+"')"; 
 		
     	query = "INSERT INTO LIB_USER(user_id, username, uname, address, email, phone)"
-    	 + "VALUES('"+user_id+"','"+username+"','"+name+"','"+address+"','"+email+"','"+phone+"')"; 
-    			
+    	 + "VALUES('"+user_id+"','"+username+"','"+name+"','"+address+"','"+email+"','"+phone+"')"; 	
  
     	stmt.executeUpdate(query);
-		
 		resultstr = "*New user " + username +" has been added to the database. UserID: " + user_id;
 		
     	}
     	catch (Exception e){
-    		System.err.println("Unable to execute query:"+query+"\n");
-            System.err.println(e.getMessage());
+            return "Unable to execute query:"+query+" <BR>" + e.getMessage();
+
     	}
-		
 		return resultstr;
 	}
 	
