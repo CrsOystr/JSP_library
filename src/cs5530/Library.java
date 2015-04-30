@@ -8,6 +8,56 @@ public class Library {
 	public Library(){
 	}
 	
+	//Function that returns a list of late books after taking a date input
+	public String late_books(int days_away, Connection con){
+		String query= "";
+		String resultstr = "";
+		try{
+	    	long time = System.currentTimeMillis();
+	    	java.sql.Date date = new java.sql.Date(time);
+	    	
+	    	Calendar cal = Calendar.getInstance();
+	    	cal.setTime(date);
+	    	cal.add(Calendar.DAY_OF_YEAR,days_away);
+	    	java.sql.Date date1 = new java.sql.Date(cal.getTimeInMillis());
+
+			query = "SELECT d.title, c.isbn, c.copy_number, c.due_date, u.uname, u.phone, u.email "
+					+   "FROM CHECK_OUT c, LIB_USER u, BOOK_DIR d "
+					+   "WHERE c.due_date < ? "
+					+	"AND c.user_id = u.user_id "
+					+	"AND c.isbn = d.isbn ";
+	    	PreparedStatement query_stat = con.prepareStatement(query);
+	    	query_stat.setString(1, "" + date1);
+	    	ResultSet rs1=query_stat.executeQuery();
+	    	
+	    	resultstr = resultstr + ("List of late books using date " + date1 + ": \n");
+
+		    while(rs1.next())
+		    {
+		    	resultstr = resultstr +("BOOK TITLE: ");
+		    	resultstr = resultstr +(rs1.getString("title"));
+		    	resultstr = resultstr +("	ISBN: ");
+		    	resultstr = resultstr +(rs1.getString("isbn"));
+		    	resultstr = resultstr +("	COPY NUMBER: ");
+		    	resultstr = resultstr +(rs1.getString("copy_number"));
+		    	resultstr = resultstr +("	DUE DATE: ");
+		    	resultstr = resultstr +(rs1.getString("due_date"));
+		    	resultstr = resultstr +("	NAME: ");
+		    	resultstr = resultstr +(rs1.getString("uname"));
+		    	resultstr = resultstr +("	PHONE: ");
+		    	resultstr = resultstr +(rs1.getString("phone"));
+		    	resultstr = resultstr +("	EMAIL: ");
+		    	resultstr = resultstr +(rs1.getString("email"));
+		    	resultstr = resultstr +("\n");
+		    }			
+		}
+		catch(Exception e){
+            return "Unable to execute query:"+query+" <BR>" + e.getMessage();
+		}
+    	return resultstr;
+	}
+	
+	
 	//Function for allowing users to check out books
 	public String checkOut(String isbn, String user_id, Connection con){
 		String query= "";
