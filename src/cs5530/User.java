@@ -8,6 +8,85 @@ public class User {
 	public User() {
 	}
 	
+	//Function returns statistics for N amount of users - Shows users who have checked out, lost, or rated the most books
+	public String userStats(int n, Connection con){
+		String query = "";
+		String resultstr = "";
+		try{
+		    query = "SELECT c.user_id, l.uname, COUNT(c.user_id) "
+		    		+ "FROM CHECK_OUT c, LIB_USER l "
+		    		+ "WHERE c.user_id = l.user_id "
+		    		+ "GROUP BY c.user_id "
+		    		+ "ORDER BY count(c.user_id) desc "
+		    		+ "LIMIT ?";
+		    PreparedStatement state1 = con.prepareStatement(query);
+		    state1.setInt(1, n);
+		    ResultSet rs1=state1.executeQuery();
+		    resultstr = resultstr + ("*****Top " + n + " users who have check out the most books***** ");
+		    while(rs1.next())
+		    {
+		    	resultstr = resultstr + ("<br>User ID: ");
+		    	resultstr = resultstr + (rs1.getString("user_id"));
+		    	resultstr = resultstr + ("		Full Name: ");
+		    	resultstr = resultstr + (rs1.getString("uname"));
+		    	resultstr = resultstr + ("		Books Checked Out: ");
+		    	resultstr = resultstr + (rs1.getString("COUNT(c.user_id)"));
+		    }
+		    
+		    
+		    query = "SELECT c.user_id, l.uname, COUNT(c.user_id) "
+		    		+ "FROM REVIEWS c, LIB_USER l "
+		    		+ "WHERE c.user_id = l.user_id "
+		    		+ "GROUP BY c.user_id "
+		    		+ "ORDER BY count(c.user_id) desc "
+		    		+ "LIMIT ?";
+		    PreparedStatement state2 = con.prepareStatement(query);
+		    state2.setInt(1, n);
+		    ResultSet rs2=state2.executeQuery();
+		    resultstr = resultstr + ("<br><br>*****Top " + n + " users who have rated the most books***** ");
+		    while(rs2.next())
+		    {
+		    	resultstr = resultstr + ("<br>User ID: ");
+		    	resultstr = resultstr + (rs2.getString("user_id"));
+		    	resultstr = resultstr + ("		Full Name: ");
+		    	resultstr = resultstr + (rs2.getString("uname"));
+		    	resultstr = resultstr + ("		Books Rated: ");
+		    	resultstr = resultstr + (rs2.getString("COUNT(c.user_id)"));
+		    }
+		    
+		    //Query and section for reporting the n users who have lost the most books
+		    query = "SELECT l.user_id, l.uname, count(l.user_id) "
+		    		+ "FROM CHECK_OUT c, LIB_USER l, BOOK_STOCK b "
+		    		+ "WHERE c.isbn = b.isbn "
+		    		+ "AND c.copy_number = b.copy_number "
+		    		+ "AND l.user_id = c.user_id "
+		    		+ "AND b.location = 'Lost' "
+		    		+ "GROUP BY l.user_id "
+		    		+ "ORDER BY count(c.user_id) desc "
+		    		+ "LIMIT ?";
+		    PreparedStatement state3 = con.prepareStatement(query);
+		    state3.setInt(1, n);
+		   // System.out.println(state3);
+		    ResultSet rs3=state3.executeQuery();
+		    resultstr = resultstr + ("<br><br>*****Top " + n + " users who have lost the most books***** ");
+		    while(rs3.next())
+		    {
+		    	resultstr = resultstr + ("<br>User ID: ");
+		    	resultstr = resultstr + (rs3.getString("user_id"));
+		    	resultstr = resultstr + ("		Full Name: ");
+		    	resultstr = resultstr + (rs3.getString("uname"));
+		    	resultstr = resultstr + ("		Books Lost: ");
+		    	resultstr = resultstr + (rs3.getString("COUNT(l.user_id)"));
+		    }
+		}
+		catch(Exception e){
+			System.err.println("Unable to execute query:"+query+"<BR>");
+            System.err.println(e.getMessage());
+		}
+		return resultstr;
+	}
+	
+	
 	//Method to add a new user to the database
 	public String newUser(String username, String name, String address, String email, String phone, Statement stmt){
 		String query = "";
@@ -169,7 +248,7 @@ public class User {
 		    }
 		}
 		catch(Exception e){
-			System.err.println("Unable to execute query:"+query+"<\n");
+			System.err.println("Unable to execute query:"+query+"<BR>");
             System.err.println(e.getMessage());
 		}
 		return resultstr;
