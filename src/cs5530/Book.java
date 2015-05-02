@@ -18,70 +18,67 @@ public class Book {
 		String resultstr="";
 		try{		
 			//Query for books that have been checked out most amount of times
-		    String query1 = "SELECT b.title, b.isbn, COUNT(c.isbn) "
+		    query = "SELECT b.title, b.isbn, COUNT(c.isbn) "
 		    		+ "FROM CHECK_OUT c, BOOK_DIR b "
 		    		+ "WHERE c.isbn = b.isbn "
 		    		+ "GROUP BY c.isbn "
 		    		+ "ORDER BY count(c.isbn) desc "
 		    		+ "LIMIT ?";
-		    PreparedStatement state1 = con.prepareStatement(query1);
+		    PreparedStatement state1 = con.prepareStatement(query);
 		    state1.setInt(1, n);
-		    //System.out.println(state1);
 		    ResultSet rs1=state1.executeQuery();
-		    System.out.print("*****Top " + n + " Books that have been checked out the most***** ");
+		    resultstr = resultstr + ("*****Top " + n + " Books that have been checked out the most***** ");
 		    while(rs1.next())
 		    {
-		    	System.out.print("\nBook Title: ");
-		    	System.out.print(rs1.getString("title"));
-		    	System.out.print("		Book ISBN: ");
-		    	System.out.print(rs1.getString("isbn"));
-		    	System.out.print("		Times Checked Out: ");
-		    	System.out.print(rs1.getString("COUNT(c.isbn)"));
+		    	resultstr = resultstr + ("<br>Book Title: ");
+		    	resultstr = resultstr + (rs1.getString("title"));
+		    	resultstr = resultstr + ("		Book ISBN: ");
+		    	resultstr = resultstr + (rs1.getString("isbn"));
+		    	resultstr = resultstr + ("		Times Checked Out: ");
+		    	resultstr = resultstr + (rs1.getString("COUNT(c.isbn)"));
 		    }
 		    
 		    //Query for returning books that have most requests on the waitlist
-		    String query2 = "SELECT b.title, b.isbn, COUNT(c.isbn) "
+		    query = "SELECT b.title, b.isbn, COUNT(c.isbn) "
 		    		+ "FROM WAIT_LIST c, BOOK_DIR b "
 		    		+ "WHERE c.isbn = b.isbn "
 		    		+ "GROUP BY c.isbn "
 		    		+ "ORDER BY count(c.isbn) desc "
 		    		+ "LIMIT ?";
-		    PreparedStatement state2 = con.prepareStatement(query2);
+		    PreparedStatement state2 = con.prepareStatement(query);
 		    state2.setInt(1, n);
-		    //System.out.println(state2);
 		    ResultSet rs2=state2.executeQuery();
-		    System.out.print("\n*****Top " + n + " Books that have been requested the most***** ");
+		    resultstr = resultstr + ("<br>*****Top " + n + " Books that have been requested the most***** ");
 		    while(rs2.next())
 		    {
-		    	System.out.print("\nBook Title: ");
-		    	System.out.print(rs2.getString("title"));
-		    	System.out.print("		Book ISBN: ");
-		    	System.out.print(rs2.getString("isbn"));
-		    	System.out.print("		Times Requested: ");
-		    	System.out.print(rs2.getString("COUNT(c.isbn)"));
+		    	resultstr = resultstr + ("<br>Book Title: ");
+		    	resultstr = resultstr + (rs2.getString("title"));
+		    	resultstr = resultstr + ("		Book ISBN: ");
+		    	resultstr = resultstr + (rs2.getString("isbn"));
+		    	resultstr = resultstr + ("		Times Requested: ");
+		    	resultstr = resultstr + (rs2.getString("COUNT(c.isbn)"));
 		    }
 		    
 		    //query for selecting books that have been lost the msot
-		    String query3 = "SELECT b.title, b.isbn, COUNT(c.isbn) "
+		    query = "SELECT b.title, b.isbn, COUNT(c.isbn) "
 		    		+ "FROM BOOK_STOCK c, BOOK_DIR b "
 		    		+ "WHERE c.isbn = b.isbn "
 		    		+ "AND c.location = 'Lost'"
 		    		+ "GROUP BY c.isbn "
 		    		+ "ORDER BY count(c.isbn) desc "
 		    		+ "LIMIT ?";
-		    PreparedStatement state3 = con.prepareStatement(query3);
+		    PreparedStatement state3 = con.prepareStatement(query);
 		    state3.setInt(1, n);
-		   // System.out.println(state3);
 		    ResultSet rs3=state3.executeQuery();
-		    System.out.print("\n\n*****Top " + n + " Books that have been lost the most*****");
+		    resultstr = resultstr + ("<br><br>*****Top " + n + " Books that have been lost the most*****");
 		    while(rs3.next())
 		    {
-		    	System.out.print("\nBook Title: ");
-		    	System.out.print(rs3.getString("title"));
-		    	System.out.print("		Book ISBN: ");
-		    	System.out.print(rs3.getString("isbn"));
-		    	System.out.print("		Times Lost: ");
-		    	System.out.print(rs3.getString("COUNT(c.isbn)"));
+		    	resultstr = resultstr + ("<br>Book Title: ");
+		    	resultstr = resultstr + (rs3.getString("title"));
+		    	resultstr = resultstr + ("		Book ISBN: ");
+		    	resultstr = resultstr + (rs3.getString("isbn"));
+		    	resultstr = resultstr + ("		Times Lost: ");
+		    	resultstr = resultstr + (rs3.getString("COUNT(c.isbn)"));
 		    }
 		    
 		    /*
@@ -95,23 +92,21 @@ public class Book {
 		    		+ "LIMIT ?";
 		    PreparedStatement state4 = con.prepareStatement(query4);
 		    state4.setInt(1, n);
-		   // System.out.println(state3);
+		   // resultstr = resultstr + ln(state3);
 		    ResultSet rs4=state4.executeQuery();
-		    System.out.print("\n\n*****Top " + n + " Books that have been lost the most*****");
+		    resultstr = resultstr + ("<br><br>*****Top " + n + " Books that have been lost the most*****");
 		    while(rs4.next())
 		    {
-		    	System.out.print("\nBook Title: ");
-		    	System.out.print(rs4.getString("title"));
-		    	System.out.print("		Book ISBN: ");
-		    	System.out.print(rs4.getString("isbn"));
-		    	System.out.print("		Times Lost: ");
-		    	System.out.print(rs4.getString("COUNT(c.isbn)"));
+		    	resultstr = resultstr + ("<br>Book Title: ");
+		    	resultstr = resultstr + (rs4.getString("title"));
+		    	resultstr = resultstr + ("		Book ISBN: ");
+		    	resultstr = resultstr + (rs4.getString("isbn"));
+		    	resultstr = resultstr + ("		Times Lost: ");
+		    	resultstr = resultstr + (rs4.getString("COUNT(c.isbn)"));
 		    }
 		    */
 		}
 		catch(Exception e){
-			System.err.println("Unable to execute query:"+query+"<br>");
-            System.err.println(e.getMessage());	
             return "Unable to execute query:"+query+" <BR>" + e.getMessage();
             }
     	return resultstr;
@@ -137,10 +132,10 @@ public class Book {
 		    PreparedStatement state2 = con.prepareStatement(query);
 		    state2.setString(1, isbn);
 		    ResultSet rs2=state2.executeQuery();
-		    resultstr = resultstr + ("*****BOOK INFO***** ");
+		    resultstr = resultstr + ("*****BOOK INFO*****");
 		    while(rs2.next())
 		    {
-		    	resultstr = resultstr + ("Title: ");
+		    	resultstr = resultstr + ("<BR>Title: ");
 		    	resultstr = resultstr + (rs2.getString("title"));
 		    	resultstr = resultstr + ("<br>Publisher: ");
 		    	resultstr = resultstr + (rs2.getString("publisher"));
@@ -163,7 +158,7 @@ public class Book {
 
 		    while(rs.next())
 		    {
-		    	resultstr = resultstr + (rs2.getString("author"));
+		    	resultstr = resultstr + (rs.getString("author"));
 		    }
 		    
 		    
@@ -331,8 +326,6 @@ public class Book {
 			resultstr = ("*New book " + title +" has been added to the database. isbn: " + isbn);
 		}
 		catch(Exception e){
-			System.err.println("Unable to execute query:"+query+"<br>");
-            System.err.println(e.getMessage());	
             return "Unable to execute query:"+query+" <BR>" + e.getMessage();
             }
 
