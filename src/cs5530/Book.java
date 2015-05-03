@@ -63,9 +63,9 @@ public class Book {
 		    query = "SELECT b.title, b.isbn, COUNT(c.isbn) "
 		    		+ "FROM BOOK_STOCK c, BOOK_DIR b "
 		    		+ "WHERE c.isbn = b.isbn "
-		    		+ "AND c.location = 'Lost'"
+		    		+ "AND c.location = 'Lost' "
 		    		+ "GROUP BY c.isbn "
-		    		+ "ORDER BY count(c.isbn) desc "
+		    		+ "ORDER BY COUNT(c.isbn) desc "
 		    		+ "LIMIT ?";
 		    PreparedStatement state3 = con.prepareStatement(query);
 		    state3.setInt(1, n);
@@ -81,30 +81,27 @@ public class Book {
 		    	resultstr = resultstr + (rs3.getString("COUNT(c.isbn)"));
 		    }
 		    
-		    /*
+		    
 		    //query for N most popular authors
-		    String query4 = "SELECT b.title, b.isbn, COUNT(c.isbn) "
-		    		+ "FROM BOOK_STOCK c, BOOK_DIR b "
+		    String query4 = "SELECT a.author, COUNT(a.author) "
+		    		+ "FROM CHECK_OUT c, BOOK_DIR b, AUTHOR a "
 		    		+ "WHERE c.isbn = b.isbn "
-		    		+ "AND c.location = 'Lost'"
-		    		+ "GROUP BY c.isbn "
-		    		+ "ORDER BY count(c.isbn) desc "
+		    		+ "AND c.isbn = a.isbn "
+		    		+ "GROUP BY a.author "
+		    		+ "ORDER BY COUNT(a.author) desc "
 		    		+ "LIMIT ?";
 		    PreparedStatement state4 = con.prepareStatement(query4);
 		    state4.setInt(1, n);
-		   // resultstr = resultstr + ln(state3);
 		    ResultSet rs4=state4.executeQuery();
-		    resultstr = resultstr + ("<br><br>*****Top " + n + " Books that have been lost the most*****");
+		    resultstr = resultstr + ("<br><br>*****Top " + n + " most popular authors*****");
 		    while(rs4.next())
 		    {
-		    	resultstr = resultstr + ("<br>Book Title: ");
-		    	resultstr = resultstr + (rs4.getString("title"));
-		    	resultstr = resultstr + ("		Book ISBN: ");
-		    	resultstr = resultstr + (rs4.getString("isbn"));
-		    	resultstr = resultstr + ("		Times Lost: ");
-		    	resultstr = resultstr + (rs4.getString("COUNT(c.isbn)"));
+		    	resultstr = resultstr + ("<br>Author: ");
+		    	resultstr = resultstr + (rs4.getString("author"));
+		    	resultstr = resultstr + (" - ");
+		    	resultstr = resultstr + (rs4.getString(2));
+		    	resultstr = resultstr + (" Books checkouts on record");
 		    }
-		    */
 		}
 		catch(Exception e){
             return "Unable to execute query:"+query+" <BR>" + e.getMessage();
