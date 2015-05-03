@@ -48,7 +48,7 @@ public class Book {
 		    PreparedStatement state2 = con.prepareStatement(query);
 		    state2.setInt(1, n);
 		    ResultSet rs2=state2.executeQuery();
-		    resultstr = resultstr + ("<br>*****Top " + n + " Books that have been requested the most***** ");
+		    resultstr = resultstr + ("<br><BR>*****Top " + n + " Books that have been requested the most***** ");
 		    while(rs2.next())
 		    {
 		    	resultstr = resultstr + ("<br>Book Title: ");
@@ -156,6 +156,7 @@ public class Book {
 		    while(rs.next())
 		    {
 		    	resultstr = resultstr + (rs.getString("author"));
+		    	resultstr = resultstr + ", ";
 		    }
 		    
 		    
@@ -189,6 +190,8 @@ public class Book {
 		    	resultstr = resultstr + (rs4.getString("user_id"));
 		    	resultstr = resultstr + ("   User Name: ");
 		    	resultstr = resultstr + (rs4.getString("uname"));
+		    	resultstr = resultstr + ("   Copy Number: ");
+		    	resultstr = resultstr + (rs4.getString("copy_number"));
 		    	resultstr = resultstr + ("   Check Out Date: ");
 		    	java.sql.Date date = rs4.getDate("due_date");
 		    	Calendar cal = Calendar.getInstance();
@@ -196,27 +199,28 @@ public class Book {
 		    	cal.add(Calendar.DAY_OF_YEAR,-30);
 		    	java.sql.Date date1 = new java.sql.Date(cal.getTimeInMillis());
 		    	resultstr = resultstr + (date1);
-		    	resultstr = resultstr + ("   Returned on: ");
+		    	resultstr = resultstr + ("   Returned/Lost on: ");
 		    	resultstr = resultstr + (rs4.getString("return_date"));
 		    }
 		    
 		    //Returns All the reviews on a certain book
-		    query = "SELECT r.review_date, r.rating, r.review_text "
+		    query = "SELECT r.user_id, r.review_date, r.rating, r.review_text "
 		    		+ "FROM REVIEWS r, BOOK_DIR b "
 		    		+ "where r.isbn = ? "
 		    		+ "AND r.isbn = b.isbn";
 		    PreparedStatement state6 = con.prepareStatement(query);
 		    state6.setString(1, isbn);
-		    //resultstr = resultstr + ln(state6);
 		    ResultSet rs6=state6.executeQuery();
 		    resultstr = resultstr + ("<br><br>*****Book Reviews*****");
 		    while(rs6.next())
 		    {
-		    	resultstr = resultstr + ("<br>Review Date: ");
+		    	resultstr = resultstr + ("<br><BR>Review Date: ");
 		    	resultstr = resultstr + (rs6.getDate("review_date"));
 		    	resultstr = resultstr + ("   Rating: ");
 		    	resultstr = resultstr + (rs6.getString("rating"));
-		    	resultstr = resultstr + ("   Review: ");
+		    	resultstr = resultstr + "	User ID: ";
+		    	resultstr = resultstr + (rs6.getString("user_id"));
+		    	resultstr = resultstr + ("   <BR>Review: ");
 		    	resultstr = resultstr + (rs6.getString("review_text"));
 		    }
 			
@@ -229,7 +233,7 @@ public class Book {
 		    state7.setString(1, isbn);
 		    ResultSet rs7=state7.executeQuery();
 		    if(rs7.next()){
-		    	resultstr = resultstr + ("<br>Average Review: ");
+		    	resultstr = resultstr + ("<br><BR>Average Review: ");
 		    	resultstr = resultstr + (rs7.getString(1));
 		    }
 		}
@@ -271,7 +275,7 @@ public class Book {
 		    	book_state.setString(3,location);
 		    	book_state.executeUpdate();
 	    	}
-	    	resultstr = ( copies + " copies of the book with isbn" + isbn + " have succesfully been added to the database");
+	    	resultstr = ( copies + " copies of the book with isbn " + isbn + " have succesfully been added to the database");
 		}
 		catch(Exception e){
             return "Unable to execute query:"+query+" <BR>" + e.getMessage();

@@ -8,8 +8,112 @@ public class Library {
 	public Library(){
 	}
 	
+	//Function to search for books based on a users search query
+	public String browseBooks(int available, int author, String author_term, int publisher, String publisher_term, int title, String title_term, int subject, String subject_term, Connection con){
+		String query= "";
+		String resultstr = "";
+		try{
+
+			//This big block determines which columns have been selected to search and creates an adequeate statement
+			String column_string = "";
+			if(author == 1) {
+				column_string = column_string + "(author LIKE '%" + author_term + "%' ";
+				if(publisher == 1) {column_string = column_string + "OR publisher LIKE '%" + publisher_term + "%'";}
+				if(title == 1) {column_string = column_string + "OR title LIKE '%" + title_term + "%'";}
+				if(subject == 1) {column_string = column_string + "OR book_subject LIKE '%" + subject_term + "%'";}
+				column_string = column_string + ") ";
+			}else if(publisher == 1){
+				{column_string = column_string + "(publisher LIKE '%" + publisher_term + "%'";}
+				if(title == 1) {column_string = column_string + "OR title LIKE '%" + title_term + "%'";}
+				if(subject == 1) {column_string = column_string + "OR book_subject LIKE '%" + subject_term + "%'";}
+				column_string = column_string + ") ";
+			}else if(title == 1) {
+				column_string = column_string + "(title LIKE '%" + title_term + "%' ";
+				if(subject == 1) {column_string = column_string + "OR book_subject LIKE '%" + subject_term + "%'";}
+				column_string = column_string + ") ";
+			}else if(subject == 1){
+				column_string = column_string + "book_subject LIKE '%" + subject_term + "%' ";
+			}
+
+			if(available == 0){
+			  query = "SELECT * "
+			    		+ "FROM BOOK_DIR bd, AUTHOR a "
+			    		+ "WHERE "
+			    		+ column_string
+			    		+ " AND bd.isbn = a.isbn "
+			    		+ "GROUP BY bd.isbn "
+			    		+ "ORDER BY bd.pub_year desc ";
+			    PreparedStatement state1 = con.prepareStatement(query);
+			    ResultSet rs1=state1.executeQuery();
+			    resultstr = resultstr + ("*****Books that satisfied your search***** ");
+			    while(rs1.next())
+			    {
+			    	resultstr = resultstr + ("<BR><BR>Title: ");
+			    	resultstr = resultstr + (rs1.getString("title"));
+			    	resultstr = resultstr + ("	<BR>Author: ");
+			    	resultstr = resultstr + (rs1.getString("author"));
+			    	resultstr = resultstr + ("	<BR>Publisher: ");
+			    	resultstr = resultstr + (rs1.getString("publisher"));
+			    	resultstr = resultstr + ("	<BR>Publication Year: ");
+			    	resultstr = resultstr + (rs1.getString("pub_year"));
+			    	resultstr = resultstr + ("	<BR>Book Format: ");
+			    	resultstr = resultstr + (rs1.getString("book_format"));
+			    	resultstr = resultstr + ("	<BR>Subject: ");
+			    	resultstr = resultstr + (rs1.getString("book_subject"));
+			    	resultstr = resultstr + ("	<BR>Summary: ");
+			    	resultstr = resultstr + (rs1.getString("summary"));
+			    }
+			}else{
+				  query = "SELECT distinct bd.title, a.author, bd.publisher, bd.pub_year, bd.book_format, bd.book_subject, bd.summary "
+				    		+ "FROM BOOK_STOCK bs, BOOK_DIR bd, AUTHOR a "
+				    		+ "WHERE bs.isbn = bd.isbn "
+				    		+ "AND bs.location <> 'checkedout' "
+				    		+ "AND bs.location <> 'Lost' "
+				    		+ "AND a.isbn = bs.isbn AND "
+				    		+ column_string
+				    		//+ "GROUP BY bs.isbn "
+				    		+ "ORDER BY bd.pub_year desc ";
+				    PreparedStatement state1 = con.prepareStatement(query);
+
+				    ResultSet rs1=state1.executeQuery();
+				    resultstr = resultstr + ("*****Books that satisfied your search***** ");
+				    while(rs1.next())
+				    {
+				    	resultstr = resultstr + ("<BR><BR>Title: ");
+				    	resultstr = resultstr + (rs1.getString("title"));
+				    	resultstr = resultstr + ("	<BR>Author: ");
+				    	resultstr = resultstr + (rs1.getString("author"));
+				    	resultstr = resultstr + ("	<BR>Publisher: ");
+				    	resultstr = resultstr + (rs1.getString("publisher"));
+				    	resultstr = resultstr + ("	<BR>PublicationYear: ");
+				    	resultstr = resultstr + (rs1.getString("pub_year"));
+				    	resultstr = resultstr + ("	<BR>BookFormat: ");
+				    	resultstr = resultstr + (rs1.getString("book_format"));
+				    	resultstr = resultstr + ("	<BR>Subject: ");
+				    	resultstr = resultstr + (rs1.getString("book_subject"));
+				    	resultstr = resultstr + ("	<BR>Summary: ");
+				    	resultstr = resultstr + (rs1.getString("summary"));
+				    }
+			}    
+		}
+		catch(Exception e){
+            return "Unable to execute query:"+query+" <BR>" + e.getMessage();
+		}
+    	return resultstr;
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	//Function that allows a book to be returned or marks as lost on the current date
-	public String returnBook(String lost, String isbn, String copy_number, Connection con){	
+	public String returnBook(int lost, String isbn, String copy_number, Connection con){	
 		String query= "";
 		String resultstr = "";
 		try{
@@ -39,13 +143,13 @@ public class Library {
 		    	state3.setString(4, copy_number);
 		    	state3.setDate(5, due_date);
 		    	state3.executeUpdate();
-		    	if(lost == "2")
+		    	if(lost == 2)
 		    	{
 			    	query = "UPDATE BOOK_STOCK SET location = 'Lost' WHERE isbn = ? AND copy_number = ?";
 			    	PreparedStatement state4 = con.prepareStatement(query);
 			    	state4.setString(1, isbn);
 			    	state4.setString(2, copy_number);
-			    	//System.out.println(state4);
+			    	//resultstr = resultstr + ln(state4);
 			    	state4.executeUpdate();
 			    	resultstr = resultstr + ("*Book ISBN " + isbn +" has been marked as lost on: " + date);
 		    	}
@@ -62,11 +166,11 @@ public class Library {
 		    	PreparedStatement query_stat = con.prepareStatement(query);
 		    	query_stat.setString(1, "" + isbn);
 		    	ResultSet rs1=query_stat.executeQuery();
-		    	resultstr = resultstr +("Users on waitlist for book: ");
+		    	resultstr = resultstr +("<BR>Users on waitlist for book: ");
 			    while(rs1.next())
 			    {
 			    	resultstr = resultstr +("USER_ID:");
-			    	resultstr = resultstr +(rs1.getString("user_id") + "\n");
+			    	resultstr = resultstr +(rs1.getString("user_id") + "<BR>");
 			    }
 	    	}else{
 	    		return "book with isbn " + isbn + " and copy number " + copy_number + " is not checked out or does not exist";
@@ -92,7 +196,7 @@ public class Library {
 	    	//Ensures that the book exists in the library datatabase
 	    	query = "SELECT * FROM BOOK_DIR where isbn = ?";
 	    	PreparedStatement query_statment = con.prepareStatement(query);
-	    	query_statment.setString(1, "" + isbn);
+	    	query_statment.setString(1, isbn);
 	    	ResultSet rs1=query_statment.executeQuery();
 	    	if (!rs1.next()){
 	        	return "A book with this ISBN does not currently exist in the library.";
@@ -135,30 +239,31 @@ public class Library {
 					+   "FROM CHECK_OUT c, LIB_USER u, BOOK_DIR d "
 					+   "WHERE c.due_date < ? "
 					+	"AND c.user_id = u.user_id "
-					+	"AND c.isbn = d.isbn ";
+					+	"AND c.isbn = d.isbn "
+					+	"AND c.return_date IS NULL";
 	    	PreparedStatement query_stat = con.prepareStatement(query);
 	    	query_stat.setString(1, "" + date1);
 	    	ResultSet rs1=query_stat.executeQuery();
 	    	
-	    	resultstr = resultstr + ("List of late books using date " + date1 + ": \n");
+	    	resultstr = resultstr + ("List of late books using date " + date1 + ":<br>");
 
 		    while(rs1.next())
 		    {
-		    	resultstr = resultstr +("BOOK TITLE: ");
+		    	resultstr = resultstr +("<BR>Book Title: ");
 		    	resultstr = resultstr +(rs1.getString("title"));
-		    	resultstr = resultstr +("	ISBN: ");
+		    	resultstr = resultstr +("	<BR>ISBN: ");
 		    	resultstr = resultstr +(rs1.getString("isbn"));
-		    	resultstr = resultstr +("	COPY NUMBER: ");
+		    	resultstr = resultstr +("	Copy Number: ");
 		    	resultstr = resultstr +(rs1.getString("copy_number"));
-		    	resultstr = resultstr +("	DUE DATE: ");
+		    	resultstr = resultstr +("	Due Date: ");
 		    	resultstr = resultstr +(rs1.getString("due_date"));
-		    	resultstr = resultstr +("	NAME: ");
+		    	resultstr = resultstr +("	<BR>Name of user: ");
 		    	resultstr = resultstr +(rs1.getString("uname"));
-		    	resultstr = resultstr +("	PHONE: ");
+		    	resultstr = resultstr +("	Phone Number: ");
 		    	resultstr = resultstr +(rs1.getString("phone"));
-		    	resultstr = resultstr +("	EMAIL: ");
+		    	resultstr = resultstr +("	Email: ");
 		    	resultstr = resultstr +(rs1.getString("email"));
-		    	resultstr = resultstr +("\n");
+		    	resultstr = resultstr +("<BR>");
 		    }			
 		}
 		catch(Exception e){
@@ -203,7 +308,7 @@ public class Library {
 			    	PreparedStatement state4= con.prepareStatement(query);
 			    	state4.setString(1, isbn);
 			    	state4.setInt(2, user_id2);
-			    	//System.out.println(state4);
+			    	//resultstr = resultstr + ln(state4);
 			    	state4.executeUpdate();
 
 		    	}
@@ -265,7 +370,7 @@ public class Library {
 			//this loop ensures the isbn exists in the database
 			while (isbn_loop)
 			{
-				System.out.println("Enter the isbn of the books to be waited for:");
+				resultstr = resultstr + ln("Enter the isbn of the books to be waited for:");
 		    	isbn = in.nextLine();
 		    	String query = "SELECT * FROM BOOK_DIR where isbn = ?";
 		    	PreparedStatement query_statment = con.prepareStatement(query);
@@ -276,7 +381,7 @@ public class Library {
 		    	}
 		    	else 
 		    	{
-		        	System.out.println("You can only wait for books that already exist in the library database.");
+		        	resultstr = resultstr + ln("You can only wait for books that already exist in the library database.");
 		        	System.out.println("Hit enter to return to the main menu and add information about this book to the database.");
 		        	in.nextLine();
 		        	return;

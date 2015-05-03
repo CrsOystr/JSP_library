@@ -134,8 +134,8 @@ public class User {
 	    	}
 	    	
 		    //returns all of user information
-		    String query2 = "SELECT * FROM LIB_USER where user_id = ?";
-		    PreparedStatement state2 = con.prepareStatement(query2);
+		    query = "SELECT * FROM LIB_USER where user_id = ?";
+		    PreparedStatement state2 = con.prepareStatement(query);
 		    state2.setString(1, user_id);
 		    ResultSet rs2=state2.executeQuery();
 		    //System.out.println("*****User Info***** ");
@@ -147,54 +147,87 @@ public class User {
 		    }
 		    
 		    //Returns all Books Checked Out and Returned by user
-		    String query3 = "SELECT * FROM BOOK_STOCK bs, CHECK_OUT co, BOOK_DIR bd "
+		    query = "SELECT * FROM BOOK_STOCK bs, CHECK_OUT co, BOOK_DIR bd "
 		    		+ "where co.user_id = ? "
 		    		+ "and co.copy_number = bs.copy_number "
 		    		+ "AND co.isbn = bs.isbn "
 		    		+ "AND co.isbn = bd.isbn "
-		    		+ "and location <> 'checkedout' "
+		    		+ "and co.return_date IS NOT NULL "
 		    		+ "and location <> 'Lost'";
-		    PreparedStatement state3 = con.prepareStatement(query3);
+		    PreparedStatement state3 = con.prepareStatement(query);
 		    state3.setString(1, user_id);
 		   // System.out.println(state3);
 		    ResultSet rs3=state3.executeQuery();
 		    resultstr = resultstr + ("<BR><BR>*****Returned Books*****");
 		    while(rs3.next())
 		    {
-		    	resultstr = resultstr + ("<BR>Title: ");
+		    	resultstr = resultstr + ("<BR><BR>Title: ");
 		    	resultstr = resultstr + (rs3.getString("title"));
-		    	resultstr = resultstr + ("   ISBN: ");
+		    	resultstr = resultstr + ("   <BR>ISBN: ");
 		    	resultstr = resultstr + (rs3.getString("isbn"));
-		    	resultstr = resultstr + ("   CheckOutDate: ");
+		    	resultstr = resultstr + ("   <BR>Check Out Date: ");
 		    	java.sql.Date date = rs3.getDate("due_date");
 		    	Calendar cal = Calendar.getInstance();
 		    	cal.setTime(date);
 		    	cal.add(Calendar.DAY_OF_YEAR,-30);
 		    	java.sql.Date date1 = new java.sql.Date(cal.getTimeInMillis());
 		    	resultstr = resultstr + (date1);
-		    	resultstr = resultstr + ("   ReturnDate: ");
+		    	resultstr = resultstr + ("   Return Date: ");
 		    	resultstr = resultstr + (rs3.getString("return_date"));
 		    }
 		    
+		    
+		    
+		    //Returns all Books Checked Out at the moment by user
+		    query = "SELECT * FROM BOOK_STOCK bs, CHECK_OUT co, BOOK_DIR bd "
+		    		+ "where co.user_id = ? "
+		    		+ "and co.copy_number = bs.copy_number "
+		    		+ "AND co.isbn = bs.isbn "
+		    		+ "AND co.isbn = bd.isbn "
+		    		+ "and co.return_date is NULL";
+		    PreparedStatement state = con.prepareStatement(query);
+		    state.setString(1, user_id);
+		   // System.out.println(state3);
+		    ResultSet rs=state.executeQuery();
+		    resultstr = resultstr + ("<BR><BR>*****Checked Out Books*****");
+		    while(rs.next())
+		    {
+		    	resultstr = resultstr + ("<BR><BR>Title: ");
+		    	resultstr = resultstr + (rs.getString("title"));
+		    	resultstr = resultstr + ("   <BR>ISBN: ");
+		    	resultstr = resultstr + (rs.getString("isbn"));
+		    	resultstr = resultstr + ("   <BR>Check Out Date: ");
+		    	java.sql.Date date = rs.getDate("due_date");
+		    	Calendar cal = Calendar.getInstance();
+		    	cal.setTime(date);
+		    	cal.add(Calendar.DAY_OF_YEAR,-30);
+		    	java.sql.Date date1 = new java.sql.Date(cal.getTimeInMillis());
+		    	resultstr = resultstr + (date1);
+		    	resultstr = resultstr + ("   Due Date: ");
+		    	resultstr = resultstr + (rs.getString("due_date"));
+		    }
+		    
+		    
+		    
 		    //Returns all books lost by the user
-		    String query4 = "SELECT * FROM BOOK_STOCK bs, CHECK_OUT co, BOOK_DIR bd "
+		    query = "SELECT * FROM BOOK_STOCK bs, CHECK_OUT co, BOOK_DIR bd "
 		    		+ "where co.user_id = ? "
 		    		+ "and co.copy_number = bs.copy_number "
 		    		+ "AND co.isbn = bs.isbn "
 		    		+ "AND co.isbn = bd.isbn "
 		    		+ "and location = 'Lost'";
-		    PreparedStatement state4 = con.prepareStatement(query4);
+		    PreparedStatement state4 = con.prepareStatement(query);
 		    state4.setString(1, user_id);
 		   // System.out.println(state3);
 		    ResultSet rs4=state4.executeQuery();
 		    resultstr = resultstr + ("<BR><BR>*****Lost Books*****");
 		    while(rs4.next())
 		    {
-		    	resultstr = resultstr + ("<BR>Title: ");
+		    	resultstr = resultstr + ("<BR><BR>Title: ");
 		    	resultstr = resultstr + (rs4.getString("title"));
-		    	resultstr = resultstr + ("   ISBN: ");
+		    	resultstr = resultstr + ("   <BR>ISBN: ");
 		    	resultstr = resultstr + (rs4.getString("isbn"));
-		    	resultstr = resultstr + ("   CheckOutDate: ");
+		    	resultstr = resultstr + ("   <BR>CheckOutDate: ");
 		    	java.sql.Date date = rs4.getDate("due_date");
 		    	Calendar cal = Calendar.getInstance();
 		    	cal.setTime(date);
@@ -206,44 +239,43 @@ public class User {
 		    }
 		    
 		    //Returns All Books USer is Waiting for
-		    String query5 = "SELECT * FROM WAIT_LIST w, BOOK_DIR b "
+		    query = "SELECT * FROM WAIT_LIST w, BOOK_DIR b "
 		    		+ "where w.user_id = ? "
 		    		+ "AND w.isbn = b.isbn";
-		    PreparedStatement state5 = con.prepareStatement(query5);
+		    PreparedStatement state5 = con.prepareStatement(query);
 		    state5.setString(1, user_id);
 		    //System.out.println(state5);
 		    ResultSet rs5=state5.executeQuery();
 		    resultstr = resultstr + ("<BR><BR>*****Waiting For Books*****");
 		    while(rs5.next())
 		    {
-		    	resultstr = resultstr + ("<BR>Title: ");
+		    	resultstr = resultstr + ("<BR><BR>Title: ");
 		    	resultstr = resultstr + (rs5.getString("title"));
-		    	resultstr = resultstr + ("   ISBN: ");
+		    	resultstr = resultstr + ("   <BR>ISBN: ");
 		    	resultstr = resultstr + (rs5.getString("isbn"));
-		    	resultstr = resultstr + ("   Waiting Since: ");
+		    	resultstr = resultstr + ("   <BR>Waiting Since: ");
 		    	resultstr = resultstr + (rs5.getDate("wait_since"));
 		    }
 		    
-		    //Returns All the reviews a user has posted
-		    String query6 = "SELECT * FROM REVIEWS r, BOOK_DIR b "
+		    //Returns Al the reviews a user has posted
+		    query = "SELECT * FROM REVIEWS r, BOOK_DIR b "
 		    		+ "where r.user_id = ? "
 		    		+ "AND r.isbn = b.isbn";
-		    PreparedStatement state6 = con.prepareStatement(query6);
+		    PreparedStatement state6 = con.prepareStatement(query);
 		    state6.setString(1, user_id);
-		    //System.out.println(state6);
 		    ResultSet rs6=state6.executeQuery();
 		    resultstr = resultstr + ("<BR><BR>*****Book Reviews*****");
 		    while(rs6.next())
 		    {
-		    	resultstr = resultstr + ("<BR>Title: ");
+		    	resultstr = resultstr + ("<BR><BR>Title: ");
 		    	resultstr = resultstr + (rs6.getString("title"));
-		    	resultstr = resultstr + ("   ISBN: ");
+		    	resultstr = resultstr + ("<BR>ISBN: ");
 		    	resultstr = resultstr + (rs6.getString("isbn"));
-		    	resultstr = resultstr + ("   Review Date: ");
+		    	resultstr = resultstr + ("<BR>Review Date: ");
 		    	resultstr = resultstr + (rs6.getDate("review_date"));
-		    	resultstr = resultstr + ("   Rating: ");
+		    	resultstr = resultstr + ("<BR>Rating: ");
 		    	resultstr = resultstr + (rs6.getString("rating"));
-		    	resultstr = resultstr + ("   Review: ");
+		    	resultstr = resultstr + ("<BR>Review: ");
 		    	resultstr = resultstr + (rs6.getString("review_text"));
 		    }
 		}
